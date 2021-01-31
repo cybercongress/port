@@ -63,4 +63,5 @@ async def subscribe_block():
             if missed_blocks == []:
                 pass
             else:
-                await sync(missed_blocks)
+                while True:
+                    await sync(missed_blocks)
