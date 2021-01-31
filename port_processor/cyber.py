@@ -24,14 +24,14 @@ async def send():
 
 
 async def process_txs(tx):
-    address = tx[2]
-    euls = get_euls(tx[3], tx[6])
-    memo = generate_memo(tx[0], euls)
+    address = tx[3]
+    euls = get_euls(tx[4], tx[7])
+    memo = generate_memo(tx[1], euls)
     _tx = await get_transaction(address, euls, memo)
     cyber_hash = await broadcast(_tx)
     if cyber_hash:
-        update_db(tx[0], cyber_hash,  euls)
-        logging.warning(f"processed cyberhash {cyber_hash} by transaction {tx[0]} with {euls} euls")
+        update_db(tx[1], cyber_hash,  euls)
+        logging.warning(f"processed cyberhash {cyber_hash} by transaction {tx[1]} with {euls} euls")
     else:
         pass
 
