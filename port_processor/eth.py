@@ -1,6 +1,5 @@
 import websockets
 import json
-# import random
 import logging
 
 from config import RECEIVER, ETH_NODE_WSS, QUERY, START_BLOCK
@@ -69,12 +68,10 @@ def parse_txs(txs: list):
     for tx in txs:
         eth_txhash = tx['hash']
         block = int(tx['blockNumber'], 0)
-
         index = int(tx['transactionIndex'], 0)
         sender = tx['from']
         cyber = hex_to_str(tx['input'])
         eth = int(tx['value'], 0) / 10**18
-        # eth = random.randint(10000000000000, 100000000000000) / 10**18
         temp = (eth_txhash, block, index, sender, cyber, eth)
         parsed_txs.append(temp)
     return parsed_txs
@@ -94,7 +91,6 @@ def hex_to_str(hex_str):
     hex_str = hex_str[2:]
     bytes_object = bytes.fromhex(hex_str)
     return bytes_object.decode()
-    # return 'cyber1hmkqhy8ygl6tnl5g8tc503rwrmmrkjcq4878e0'
 
 
 @ws_exception_handler

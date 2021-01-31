@@ -86,6 +86,7 @@ async def get_transaction(to, euls, memo):
     address = privkey_to_address(priv_key)
     info = await get_account_info(address)
     sequence, number = info
+    euls = int(euls / 1000)
     tx = Transaction(
         privkey=priv_key,
         account_num=number,
