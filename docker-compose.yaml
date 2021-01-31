@@ -71,7 +71,7 @@ services:
             cyberindex-net:
                 ipv4_address: 172.28.1.5
 networks:
-  cyberindex-net:
+  port-net:
     driver: bridge
     ipam:
         driver: default
