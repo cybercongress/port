@@ -116,7 +116,8 @@ async def receive():
 
 
 async def sync(missing_blocks):
-    for block in missing_blocks:
-        # logging.info(f'syncing block  #{block}')
-        await process(block)
-        bookmark_as_synced(block)
+    while True:
+        for block in missing_blocks:
+            # logging.info(f'syncing block  #{block}')
+            await process(block)
+            bookmark_as_synced(block)
