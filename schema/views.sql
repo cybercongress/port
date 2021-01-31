@@ -1,5 +1,6 @@
 CREATE VIEW txs_queue AS (
     SELECT
+        transaction.block
         eth_txhash,
         cyber_hash,
         cyber,
