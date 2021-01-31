@@ -13,7 +13,7 @@ services:
             POSTGRES_USER: ${POSTGRES_USER}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         networks:
-            cyberindex-net:
+            port-net:
                 ipv4_address: 172.28.1.2
         ports:
             - ${POSTGRES_HOST}:${POSTGRES_PORT}:5432
@@ -30,7 +30,7 @@ services:
             HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
             HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
         networks:
-            cyberindex-net:
+            port-net:
                 ipv4_address: 172.28.1.3
         ports:
             - ${HASURA_HOST}:${HASURA_PORT}:8080
@@ -54,7 +54,7 @@ services:
             LCD_API: ${LCD_API}
             SENDER: ${SENDER}
         networks:
-            cyberindex-net:
+            port-net:
                 ipv4_address: 172.28.1.4
     cap_api:
         build: ./cap_api
@@ -68,7 +68,7 @@ services:
         ports:
             - ${CAP_API_HOST}:${CAP_API_PORT}:5000
         networks:
-            cyberindex-net:
+            port-net:
                 ipv4_address: 172.28.1.5
 networks:
   port-net:
