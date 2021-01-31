@@ -56,12 +56,10 @@ async def subscribe_block():
         """
         await init(websocket)
         await send_query(websocket, height_query)
-
         while True:
             await receive_data(websocket)
             missed_blocks = await get_missed_blocks_list()
             if missed_blocks == []:
                 pass
             else:
-                while True:
-                    await sync(missed_blocks)
+                await sync(missed_blocks)
