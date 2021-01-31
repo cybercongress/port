@@ -1,0 +1,5 @@
+psycopg2-binary==2.8.6
+websockets==8.1
+aiohttp==3.7.3
+web3==5.15.0
+cyberpy==0.0.8
