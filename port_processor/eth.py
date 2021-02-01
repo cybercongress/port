@@ -73,7 +73,10 @@ def parse_txs(txs: list):
         cyber = hex_to_str(tx['input'])
         eth = int(tx['value'], 0) / 10**18
         temp = (eth_txhash, block, index, sender, cyber, eth)
-        parsed_txs.append(temp)
+        if cyber == None:
+            pass
+        else:
+            parsed_txs.append(temp)
     return parsed_txs
 
 
@@ -81,8 +84,9 @@ async def process(block):
     txs = await get_transactions(block)
     _txs = await get_receiver_txs(txs)
     data = parse_txs(_txs)
-    if block >= START_BLOCK and data[4] != None:
+    if block >= START_BLOCK:
         write_data_to_db(block, data)
+        bookmark_as_synced(block)
     else:
         pass
 
@@ -119,4 +123,3 @@ async def sync(missing_blocks):
     for block in missing_blocks:
         # logging.info(f'syncing block  #{block}')
         await process(block)
-        bookmark_as_synced(block)

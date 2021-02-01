@@ -115,7 +115,6 @@ async def broadcast(tx):
 async def broadcaster(resp):
     resp = await resp.read()
     resp = json.loads(resp)
-    print(resp)
     if 'code' in resp.keys():
         return None
     else:
