@@ -1,10 +1,11 @@
 import asyncio
 import functools
 import logging
+import concurrent.futures
 
 
 from websockets.exceptions import WebSocketException
-from aiohttp import ClientError, ClientResponseError, ClientConnectionError, ClientPayloadError, ServerTimeoutError
+from aiohttp import ClientError, ClientResponseError, ClientConnectionError, ClientPayloadError, ServerTimeoutError, ServerDisconnectedError
 from socket import error
 from config import TIME_SLEEP
 
@@ -14,7 +15,10 @@ client_exceptions = (
     ClientResponseError,
     ClientConnectionError,
     ClientPayloadError,
-    ServerTimeoutError
+    ServerTimeoutError,
+    concurrent.futures.CancelledError,
+    ServerDisconnectedError,
+    OSError
 )
 
 
@@ -43,3 +47,6 @@ def aiohttp_exception_handler(f):
                 logging.warning(f"aiohttp exception handled in {f.__name__}\n{e!r}\nWaiting for {TIME_SLEEP} seconds and trying again")
                 await asyncio.sleep(TIME_SLEEP)
     return wrapped
+
+
+

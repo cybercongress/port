@@ -98,6 +98,7 @@ async def get_transaction(to, euls, memo):
         sync_mode="block",
     )
     tx.add_transfer(recipient=to, amount=euls)
+
     return tx.get_pushable()
 
 
@@ -109,15 +110,13 @@ async def broadcast(tx):
 
 @aiohttp_exception_handler
 async def broadcaster(client, tx):
-    async with client.post(LCD_API + '/txs', data=tx) as resp:
-        assert resp.status == 200
-        resp = await resp.read()
-        resp = json.loads(resp)
-        await client.close()
-        if 'code' in resp.keys():
-            return None
-        else:
-            return resp['txhash']
+    async with client.post(LCD_API + '/txs', data=tx, headers={'content-type': 'application/json'}) as resp:
+        while True:
+            resp = await process_resp(client, resp)
+            if 'code' in resp.keys():
+                return None
+            else:
+                return resp['txhash']
 
 
 async def get_account_info(address):
@@ -129,10 +128,20 @@ async def get_account_info(address):
 @aiohttp_exception_handler
 async def get_info(client, address):
     async with client.get(LCD_API + '/auth/accounts/' + address) as resp:
-        assert resp.status == 200
+        while True:
+            resp = await process_resp(client, resp)
+            sequence = resp['result']['value']['sequence']
+            number = resp['result']['value']['account_number']
+            return sequence, number
+
+
+async def process_resp(client, resp):
+    if resp.status != 200:
+        logging.warning(f'CYBER LCD Connection error {resp.status}. {TIME_SLEEP} for the next reconnect attempt...')
+        await asyncio.sleep(TIME_SLEEP)
+        await send()
+    else:
         resp = await resp.read()
-        resp = json.loads(resp)
-        sequence = resp['result']['value']['sequence']
-        number = resp['result']['value']['account_number']
         await client.close()
-        return sequence, number
+        return json.loads(resp)
+
