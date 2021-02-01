@@ -1,6 +1,7 @@
 import aiohttp
 import asyncio
 import logging
+import json
 
 
 from exceptions_decorators import aiohttp_exception_handler
@@ -112,7 +113,9 @@ async def broadcast(tx):
 
 @aiohttp_exception_handler
 async def broadcaster(resp):
-    resp = await resp.json()
+    resp = await resp.read()
+    resp = json.loads(resp)
+    print(resp)
     if 'code' in resp.keys():
         return None
     else:
@@ -130,30 +133,8 @@ async def get_account_info(address):
 
 @aiohttp_exception_handler
 async def get_info(resp):
-    resp = await resp.json()
+    resp = await resp.read()
+    resp = json.loads(resp)
     sequence = resp['result']['value']['sequence']
     number = resp['result']['value']['account_number']
     return sequence, number
-
-
-# async def process():
-#     for i in range(10):
-#         print(i)
-#         tx = await get_transaction('cyber1hmkqhy8ygl6tnl5g8tc503rwrmmrkjcq4878e0', 1, 'test')
-#         cyber_hash = await broadcast(tx)
-#         print(cyber_hash)
-#         await asyncio.sleep(1)
-#
-#
-# async def noise():
-#     while True:
-#         print("noise")
-#         await asyncio.sleep(1)
-#
-# ioloop = asyncio.get_event_loop()
-# tasks = [
-#     ioloop.create_task(noise()),
-#     ioloop.create_task(send())
-# ]
-# ioloop.run_until_complete(asyncio.wait(tasks))
-# ioloop.close()

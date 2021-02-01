@@ -81,7 +81,7 @@ async def process(block):
     txs = await get_transactions(block)
     _txs = await get_receiver_txs(txs)
     data = parse_txs(_txs)
-    if block >= START_BLOCK:
+    if block >= START_BLOCK and data[4] != None:
         write_data_to_db(block, data)
     else:
         pass
@@ -90,7 +90,11 @@ async def process(block):
 def hex_to_str(hex_str):
     hex_str = hex_str[2:]
     bytes_object = bytes.fromhex(hex_str)
-    return bytes_object.decode()
+    address = bytes_object.decode()
+    if len(address) != 44 or 'cyber' not in address:
+        return None
+    else:
+        return address
 
 
 @ws_exception_handler

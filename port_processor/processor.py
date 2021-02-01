@@ -14,5 +14,3 @@ def processor():
     ]
     ioloop.run_until_complete(asyncio.wait(tasks))
     ioloop.close()
-
-# ,ioloop.create_task(send())
