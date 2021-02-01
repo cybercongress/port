@@ -45,7 +45,6 @@ def update_db(eth_hash, cyber_hash, euls):
                     SET eul = {euls}, cyber_hash = \'{cyber_hash}\'
                     WHERE eth_txhash like (\'{eth_hash}\');
                     ''')
-    # logging.warning('db updated')
     conn.commit()
     conn.close()
 
@@ -102,38 +101,38 @@ async def get_transaction(to, euls, memo):
     return tx.get_pushable()
 
 
-@aiohttp_exception_handler
 async def broadcast(tx):
-    async with aiohttp.ClientSession() as session:
-        async with session.post(LCD_API + '/txs', data=tx) as resp:
-            while True:
-                res = await broadcaster(resp)
-                return res
+    while True:
+        async with aiohttp.ClientSession() as client:
+            return await broadcaster(client, tx)
 
 
 @aiohttp_exception_handler
-async def broadcaster(resp):
-    resp = await resp.read()
-    resp = json.loads(resp)
-    if 'code' in resp.keys():
-        return None
-    else:
-        return resp['txhash']
+async def broadcaster(client, tx):
+    async with client.post(LCD_API + '/txs', data=tx) as resp:
+        assert resp.status == 200
+        resp = await resp.read()
+        resp = json.loads(resp)
+        await client.close()
+        if 'code' in resp.keys():
+            return None
+        else:
+            return resp['txhash']
 
 
-@aiohttp_exception_handler
 async def get_account_info(address):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(LCD_API + '/auth/accounts/' + address) as resp:
-            while True:
-                info = await get_info(resp)
-                return info
+    while True:
+        async with aiohttp.ClientSession() as client:
+            return await get_info(client, address)
 
 
 @aiohttp_exception_handler
-async def get_info(resp):
-    resp = await resp.read()
-    resp = json.loads(resp)
-    sequence = resp['result']['value']['sequence']
-    number = resp['result']['value']['account_number']
-    return sequence, number
+async def get_info(client, address):
+    async with client.get(LCD_API + '/auth/accounts/' + address) as resp:
+        assert resp.status == 200
+        resp = await resp.read()
+        resp = json.loads(resp)
+        sequence = resp['result']['value']['sequence']
+        number = resp['result']['value']['account_number']
+        await client.close()
+        return sequence, number
