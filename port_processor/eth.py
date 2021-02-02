@@ -73,7 +73,7 @@ def parse_txs(txs: list):
         cyber = hex_to_str(tx['input'])
         eth = int(tx['value'], 0) / 10**18
         temp = (eth_txhash, block, index, sender, cyber, eth)
-        if cyber == None:
+        if cyber is None or eth == 0:
             pass
         else:
             parsed_txs.append(temp)
