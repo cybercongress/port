@@ -10,7 +10,9 @@ CREATE VIEW txs_queue AS (
         sum(eul) OVER (ORDER BY block.block, index) :: bigint as eul_sum,
         (eth / eul) * 1000000000 as av_price,
         checked,
-        sender
+        sender,
+        sum(eth) OVER (PARTITION BY sender) as eth_sum_by_address,
+        sum(eul) OVER (PARTITION BY sender) :: bigint as eul_sum_by_address
     FROM transaction
     LEFT JOIN block
     ON block.block = transaction.block
