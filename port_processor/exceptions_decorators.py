@@ -22,7 +22,6 @@ client_exceptions = (
 )
 
 
-
 logging.basicConfig(format='%(asctime)s %(message)s')
 
 def ws_exception_handler(f):

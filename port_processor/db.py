@@ -21,20 +21,20 @@ def get_connection():
     )
 
 
-def write_data_to_db(block, data):
+def write_data_to_db(block, data, timestamp):
     conn = get_connection()
     c = conn.cursor()
     save_data(c, data)
-    save_block(c, block)
+    save_block(c, block, timestamp)
     logging.warning(f"block {block} data saved in db")
     conn.commit()
     conn.close()
 
 
-def write_block_to_db(block):
+def write_block_to_db(block, timestamp):
     conn = get_connection()
     c = conn.cursor()
-    save_block(c, block)
+    save_block(c, block, timestamp)
     logging.warning(f"block {block} number saved in db")
     conn.commit()
     conn.close()
@@ -46,8 +46,12 @@ def save_data(cursor, data):
                     VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING;''', data)
 
 
-def save_block(cursor, block):
-    cursor.execute(f'''INSERT INTO block (block) VALUES ({block}) ON CONFLICT DO NOTHING;''')
+def save_block(cursor, block, timestamp=None):
+    if timestamp:
+        cursor.execute(f'''INSERT INTO block (block, block_time) VALUES ({block}, {timestamp}) ON CONFLICT DO NOTHING;''')
+    else:
+        cursor.execute(
+            f'''INSERT INTO block (block) VALUES ({block}) ON CONFLICT DO NOTHING;''')
 
 
 def bookmark_as_synced(block):

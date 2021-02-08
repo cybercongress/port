@@ -18,3 +18,21 @@ QUERY = '''{
     current_price
   }
 }'''
+
+QUERY_DAY = '''{
+  day_price {
+    day
+  }
+}'''
+
+QUERY_WEEK = '''{
+  week_price {
+    week
+  }
+}'''
+
+QUERY_MONTH = '''{
+  month_price {
+    month
+  }
+}'''

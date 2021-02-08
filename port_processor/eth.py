@@ -12,7 +12,8 @@ logging.basicConfig(format='%(asctime)s %(message)s')
 
 def get_block_number(resp):
     block = resp['params']['result']['number']
-    return int(block, 0)
+    timestamp = resp['params']['result']['timestamp']
+    return int(block, 0), int(timestamp, 0)
 
 
 @ws_exception_handler
@@ -28,7 +29,8 @@ async def get_transactions(block):
         await websocket.send(query)
         resp = await websocket.recv()
         txs = json.loads(resp)['result']['transactions']
-        return txs
+        timestamp = json.loads(resp)['result']['timestamp']
+        return txs, timestamp
 
 
 async def get_receiver_txs(txs: list):
@@ -82,10 +84,12 @@ def parse_txs(txs: list):
 
 async def process(block):
     txs = await get_transactions(block)
+    txs, timestamp = txs[0], txs[1]
     _txs = await get_receiver_txs(txs)
     data = parse_txs(_txs)
+    timestamp = int(timestamp, 0)
     if block >= START_BLOCK:
-        write_data_to_db(block, data)
+        write_data_to_db(block, data, timestamp)
         bookmark_as_synced(block)
     else:
         pass
@@ -109,10 +113,9 @@ async def receive():
             resp = await websocket.recv()
             resp = json.loads(resp)
             if 'params' in resp.keys():
-                block = get_block_number(resp)
-                # logging.info(f"receiving block #{block}")
+                block, timestamp = get_block_number(resp)
                 if block >= START_BLOCK:
-                    write_block_to_db(block)
+                    write_block_to_db(block, timestamp)
                 else:
                     pass
             else:
@@ -121,5 +124,4 @@ async def receive():
 
 async def sync(missing_blocks):
     for block in missing_blocks:
-        # logging.info(f'syncing block  #{block}')
         await process(block)

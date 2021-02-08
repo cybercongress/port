@@ -12,10 +12,35 @@ CREATE VIEW txs_queue AS (
         checked,
         sender,
         sum(eth) OVER (PARTITION BY sender) as eth_sum_by_address,
-        sum(eul) OVER (PARTITION BY sender) :: bigint as eul_sum_by_address
+        sum(eul) OVER (PARTITION BY sender) :: bigint as eul_sum_by_address,
+        block.block_time
     FROM transaction
     LEFT JOIN block
     ON block.block = transaction.block
+);
+
+CREATE VIEW day_price AS (
+    SELECT
+        coalesce(max(av_price), 0.1) as day
+    FROM
+        txs_queue
+    WHERE block_time <= extract(epoch from now()) - 24*60*60
+);
+
+CREATE VIEW week_price AS (
+    SELECT
+        coalesce(max(av_price), 0.1) as week
+    FROM
+        txs_queue
+    WHERE block_time <= extract(epoch from now()) - 24*60*60*7
+);
+
+CREATE VIEW month_price AS (
+    SELECT
+        coalesce(max(av_price), 0.1) as month
+    FROM
+        txs_queue
+    WHERE block_time <= extract(epoch from now()) - 24*60*60*30
 );
 
 
