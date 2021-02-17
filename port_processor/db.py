@@ -86,10 +86,15 @@ async def get_last_block():
 async def get_missed_blocks_list():
     conn = get_connection()
     c = conn.cursor()
-    c.execute('SELECT * FROM block where checked is not Null')
-    blocks = [row[0] for row in c.fetchall()]
+    c.execute('SELECT max(block) FROM block where checked is not Null')
+    last_synced_block = c.fetchall()[0][0]
     conn.commit()
     conn.close()
     last_block = await get_last_block()
-    blocks_list = blocks + [last_block]
-    return [x for x in range(START_BLOCK, max(blocks_list) + 1) if x not in blocks_list]
+    if last_synced_block:
+        start = max([START_BLOCK, last_synced_block])
+        blocks_list = list(range(start + 1, last_block + 1))
+    else:
+        start = START_BLOCK
+        blocks_list = list(range(start, last_block + 1))
+    return blocks_list
