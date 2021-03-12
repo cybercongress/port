@@ -35,7 +35,7 @@ def get_cyb_market_data():
     market_cap = get_market_cap(current_price[0])['market_cap']
     return {
         "market_data": {
-            "current_price": current_price[0],
+            "current_price": current_price[0]['current_price'],
             "market_cap": market_cap,
             "market_cap_rank": None,
             "price_change_percentage_24h": current_price[1][0],
