@@ -25,7 +25,7 @@ async def get_transactions(block):
             "params": [block, True],
             "id": 1
     })
-    async with websockets.connect(ETH_NODE_WSS) as websocket:
+    async with websockets.connect(ETH_NODE_WSS, ping_interval=None) as websocket:
         await websocket.send(query)
         resp = await websocket.recv()
         txs = json.loads(resp)['result']['transactions']
@@ -58,7 +58,7 @@ async def get_valid_txs(tx):
         "params": [tx],
         "id": 1
     })
-    async with websockets.connect(ETH_NODE_WSS) as websocket:
+    async with websockets.connect(ETH_NODE_WSS, ping_interval=None) as websocket:
         await websocket.send(query)
         resp = await websocket.recv()
         status = int(json.loads(resp)['result']['status'], 0)
@@ -107,7 +107,7 @@ def hex_to_str(hex_str):
 
 @ws_exception_handler
 async def receive():
-    async with websockets.connect(ETH_NODE_WSS) as websocket:
+    async with websockets.connect(ETH_NODE_WSS, ping_interval=None) as websocket:
         await websocket.send(QUERY)
         while True:
             resp = await websocket.recv()
