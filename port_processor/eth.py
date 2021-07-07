@@ -100,7 +100,10 @@ def hex_to_str(hex_str):
     bytes_object = bytes.fromhex(hex_str)
     address = bytes_object.decode()
     if len(address) != 44 or 'cyber' not in address:
-        return None
+        if 'bostrom' not in address:
+            return None
+        else:
+            return address
     else:
         return address
 

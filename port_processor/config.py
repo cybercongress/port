@@ -35,6 +35,7 @@ QUERY = json.dumps({
 # CYBER CONFIG
 LCD_API = os.environ.get("LCD_API")
 SENDER = os.environ.get("SENDER")
+gRPC_API = os.environ.get("gRPC_API")
 # ---------------------------------------------------------------------------
 
-TIME_SLEEP = 10
+TIME_SLEEP = 13

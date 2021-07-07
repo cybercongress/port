@@ -52,6 +52,7 @@ services:
             ETH_NODE_RPC: ${ETH_NODE_RPC}
             RECEIVER: ${RECEIVER}
             LCD_API: ${LCD_API}
+            gRPC_API: ${gRPC_API}
             SENDER: ${SENDER}
         networks:
             port-net:

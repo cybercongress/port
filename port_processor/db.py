@@ -2,6 +2,7 @@ import psycopg2
 import logging
 import json
 import websockets
+import itertools
 
 
 from config import POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB, START_BLOCK, ETH_NODE_WSS
@@ -88,13 +89,18 @@ async def get_missed_blocks_list():
     c = conn.cursor()
     c.execute('SELECT max(block) FROM block where checked is not Null')
     last_synced_block = c.fetchall()[0][0]
+    try:
+        c.execute(f'SELECT block FROM block where checked is Null and block < {last_synced_block}')
+        missed_blocks = list(itertools.chain(*c.fetchall()))
+    except psycopg2.errors.InFailedSqlTransaction:
+        missed_blocks = []
     conn.commit()
     conn.close()
     last_block = await get_last_block()
     if last_synced_block:
         start = max([START_BLOCK, last_synced_block])
-        blocks_list = list(range(start + 1, last_block + 1))
+        blocks_list = missed_blocks + list(range(start + 1, last_block + 1))
     else:
         start = START_BLOCK
-        blocks_list = list(range(start, last_block + 1))
+        blocks_list = missed_blocks + list(range(start, last_block + 1))
     return blocks_list

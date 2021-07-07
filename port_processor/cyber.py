@@ -5,9 +5,8 @@ import json
 
 
 from exceptions_decorators import aiohttp_exception_handler
-from cyberpy import Transaction
-from cyberpy import seed_to_privkey, privkey_to_address
-from config import SENDER, LCD_API, TIME_SLEEP
+from cyberpy import Transaction, seed_to_privkey, privkey_to_address, address_to_address
+from config import SENDER, LCD_API, TIME_SLEEP, gRPC_API
 from db import get_connection
 
 
@@ -19,6 +18,7 @@ async def send():
         data = get_data()
         if data:
             await process_txs(data)
+            await asyncio.sleep(TIME_SLEEP)
         else:
             await asyncio.sleep(TIME_SLEEP)
             pass
@@ -26,6 +26,7 @@ async def send():
 
 async def process_txs(tx):
     address = tx[3]
+    address = address_to_address(address, 'bostrom')
     euls = get_euls(tx[4], tx[7])
     memo = generate_memo(tx[1], euls)
     _tx = await get_transaction(address, euls, memo)
@@ -50,7 +51,7 @@ def update_db(eth_hash, cyber_hash, euls):
 
 
 def generate_memo(eth_hash, euls):
-    return f"According to this ethereum network transaction hash {eth_hash} you get {euls} euls."
+    return f"According to this ethereum network transaction hash {eth_hash} you get {euls} cybs."
 
 
 def get_data():
@@ -75,6 +76,7 @@ def get_euls(eth, sum_eul):
     const = eul_func(geul) + eth
     x0_eul = ((1000 / 99) * (((99 * const + 2500)**(1/2)) - 50)) * 10**9
     return int(x0_eul - sum_eul)
+    return 1
 
 
 def eul_func(x):
@@ -90,14 +92,13 @@ async def get_transaction(to, euls, memo):
         privkey=priv_key,
         account_num=number,
         sequence=sequence,
-        fee=0,
+        fee=1,
         gas=200000,
         memo=memo,
-        chain_id="euler-6",
-        sync_mode="block",
+        chain_id="bostrom-testnet-1",
+        sync_mode="broadcast_tx_sync",
     )
     tx.add_transfer(recipient=to, amount=euls)
-
     return tx.get_pushable()
 
 
@@ -109,13 +110,13 @@ async def broadcast(tx):
 
 @aiohttp_exception_handler
 async def broadcaster(client, tx):
-    async with client.post(LCD_API + '/txs', data=tx, headers={'content-type': 'application/json'}) as resp:
-        while True:
-            resp = await process_resp(client, resp)
-            if 'code' in resp.keys():
-                return None
-            else:
-                return resp['txhash']
+    async with client.post(gRPC_API, data=tx) as resp:
+        resp = await process_resp(client, resp)
+        print(resp)
+        if resp['result']['code'] == 0:
+            return resp['result']['hash']
+        else:
+            return None
 
 
 async def get_account_info(address):
@@ -126,12 +127,17 @@ async def get_account_info(address):
 
 @aiohttp_exception_handler
 async def get_info(client, address):
-    async with client.get(LCD_API + '/auth/accounts/' + address) as resp:
-        while True:
-            resp = await process_resp(client, resp)
-            sequence = resp['result']['value']['sequence']
-            number = resp['result']['value']['account_number']
-            return sequence, number
+    url = LCD_API + '/cosmos/auth/v1beta1/accounts/' + address
+    async with client.get(url) as resp:
+        resp = await process_resp(client, resp)
+        resp = resp['account']
+        if 'base_vesting_account' in resp.keys():
+            sequence = int(resp['base_vesting_account']['base_account']['sequence'])
+            number = int(resp['base_vesting_account']['base_account']['account_number'])
+        else:
+            sequence = int(resp['sequence'])
+            number = int(resp['account_number'])
+        return sequence, number
 
 
 async def process_resp(client, resp):
