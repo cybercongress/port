@@ -26,24 +26,38 @@ async def send():
 
 async def process_txs(tx):
     address = tx[3]
-    address = address_to_address(address, 'bostrom')
+    # address = address_to_address(address, 'bostrom')
     euls = get_euls(tx[4], tx[7])
-    memo = generate_memo(tx[1], euls)
-    _tx = await get_transaction(address, euls, memo)
-    cyber_hash = await broadcast(_tx)
-    if cyber_hash:
-        update_db(tx[1], cyber_hash,  euls)
-        logging.warning(f"processed cyberhash {cyber_hash} by transaction {tx[1]} with {euls} euls")
-    else:
-        pass
+    # memo = generate_memo(tx[1], euls)
+    # _tx = await get_transaction(address, euls, memo)
+    # cyber_hash = await broadcast(_tx)
+    # if cyber_hash:
+    # update_db(tx[1], cyber_hash,  euls)
+    update_db(tx[1], euls)
+    # logging.warning(f"processed cyberhash {cyber_hash} by transaction {tx[1]} with {euls} euls")
+    logging.warning(f"processed transaction {tx[1]} with {euls} euls")
+    # else:
+    #     pass
 
 
-def update_db(eth_hash, cyber_hash, euls):
+# def update_db(eth_hash, cyber_hash, euls):
+#     conn = get_connection()
+#     cursor = conn.cursor()
+#     cursor.execute(f'''
+#                     UPDATE transaction
+#                     SET eul = {euls}, cyber_hash = \'{cyber_hash}\'
+#                     WHERE eth_txhash like (\'{eth_hash}\');
+#                     ''')
+#     conn.commit()
+#     conn.close()
+
+
+def update_db(eth_hash, euls):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(f'''
                     UPDATE transaction
-                    SET eul = {euls}, cyber_hash = \'{cyber_hash}\'
+                    SET eul = {euls}
                     WHERE eth_txhash like (\'{eth_hash}\');
                     ''')
     conn.commit()
@@ -60,7 +74,7 @@ def get_data():
     cursor.execute('''
                     SELECT * 
                     FROM txs_queue 
-                    WHERE cyber_hash is Null and checked is not Null limit 1
+                    WHERE eul is Null and checked is not Null limit 1
     ''')
     txs = cursor.fetchall()
     if txs != []:
@@ -76,7 +90,6 @@ def get_euls(eth, sum_eul):
     const = eul_func(geul) + eth
     x0_eul = ((1000 / 99) * (((99 * const + 2500)**(1/2)) - 50)) * 10**9
     return int(x0_eul - sum_eul)
-    return 1
 
 
 def eul_func(x):

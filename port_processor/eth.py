@@ -5,6 +5,7 @@ import logging
 from config import RECEIVER, ETH_NODE_WSS, QUERY, START_BLOCK
 from db import write_data_to_db, bookmark_as_synced, write_block_to_db
 from exceptions_decorators import ws_exception_handler
+from cyberpy._wallet import address_to_address
 
 
 logging.basicConfig(format='%(asctime)s %(message)s')
@@ -99,13 +100,14 @@ def hex_to_str(hex_str):
     hex_str = hex_str[2:]
     bytes_object = bytes.fromhex(hex_str)
     address = bytes_object.decode()
-    if len(address) != 44 or 'cyber' not in address:
-        if 'bostrom' not in address:
+    try:
+        address = address_to_address(address, 'cyber')
+        if len(address) != 44 or 'cyber' not in address:
             return None
         else:
             return address
-    else:
-        return address
+    except Exception:
+        return None
 
 
 @ws_exception_handler
