@@ -7,14 +7,16 @@ from config import GCYB_SUPPLY
 app = Flask(__name__)
 
 
-@app.route('/')
-def index():
-    return ""
-
-
 @app.route('/coins/cyb', methods=['GET'])
 def cyb_data():
-    market_data = get_cyb_market_data()['market_data']
+    global MARKET_DATA
+    try:
+        print('in try')
+        market_data = get_cyb_market_data()['market_data']
+        MARKET_DATA = market_data
+    except Exception:
+        print('in exept')
+        market_data = MARKET_DATA.copy()
     return jsonify({
         "name": "cyber",
         "symbol": "gcyb",
@@ -24,18 +26,6 @@ def cyb_data():
         "market_data": market_data,
         "supply": GCYB_SUPPLY
     })
-
-
-# @app.route('/coins/gol', methods=['GET'])
-# def gol_data():
-#     market_data = get_gol_market_data()['market_data']
-#     return jsonify({
-#         "name": "euler~Foundation",
-#         "symbol": "ggol",
-#         "image": "https://etherscan.io/images/main/empty-token.png",
-#         "market_data": market_data,
-#         "supply": GGOL_SUPPLY
-#     })
 
 
 if __name__ == '__main__':

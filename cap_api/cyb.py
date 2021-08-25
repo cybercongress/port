@@ -64,9 +64,7 @@ def get_current_price(resp):
 
 def calculate_change(resp, current, was, vs_change):
     eth_ch = (resp['market_data'][vs_change] / 100) + 1
-    print(eth_ch)
     cyb_ch = current/was
-    print(cyb_ch)
     arbitrage = (eth_ch * cyb_ch - 1) * 100
     return arbitrage
 
